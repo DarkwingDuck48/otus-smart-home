@@ -1,70 +1,82 @@
-use std::fmt;
-
-use rand::{Rng, rng};
+use crate::smart_devices::{SmartElectricalSoket, SmartThermometer};
 
 pub trait GetStatus {
-    fn print_status(&mut self) -> String;
+    fn print_status(&self) -> String;
 }
 
-pub enum TempMeasures {
-    C,
-    F,
+#[derive(Debug)]
+pub enum SmartDevice {
+    Thermometer(SmartThermometer),
+    ElectricalSocket(SmartElectricalSoket),
 }
 
-impl fmt::Display for TempMeasures {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+impl SmartDevice {
+    fn report(&self) -> String {
         match self {
-            TempMeasures::C => write!(f, "° C"),
-            TempMeasures::F => write!(f, "° F"),
+            SmartDevice::Thermometer(thermo) => thermo.print_status(),
+            SmartDevice::ElectricalSocket(socket) => socket.print_status(),
         }
     }
 }
 
-pub struct SmartThermometer {
-    name: String,
-    temp: i8,
-    measure: TempMeasures,
+pub struct Room {
+    devices: [SmartDevice; 4],
 }
 
-impl SmartThermometer {
-    pub fn new(name: String, measure: TempMeasures) -> Self {
-        let temp = rng().random();
-        Self {
-            name,
-            temp,
-            measure,
+impl Room {
+    pub fn new(devices: [SmartDevice; 4]) -> Self {
+        Self { devices }
+    }
+
+    fn check_device_index(&self, index: usize) {
+        if index >= self.devices.len() {
+            panic!("Device with index {} not found in Room", index)
         }
     }
 
-    fn get_new_temp(&mut self) {
-        self.temp = rng().random();
+    pub fn get_device(&self, index: usize) -> &SmartDevice {
+        self.check_device_index(index);
+        &self.devices[index]
+    }
+
+    pub fn get_mutable_device(&mut self, index: usize) -> &mut SmartDevice {
+        self.check_device_index(index);
+        &mut self.devices[index]
+    }
+
+    pub fn devices_report(&self) {
+        for device in &self.devices {
+            println!("{}", device.report());
+        }
     }
 }
 
-impl GetStatus for SmartThermometer {
-    fn print_status(&mut self) -> String {
-        self.get_new_temp();
-        format!(
-            "Device Name: {}, Current Temp: {}{}",
-            self.name, self.temp, self.measure
-        )
+pub struct SmartHome {
+    rooms: [Room; 1],
+}
+
+impl SmartHome {
+    pub fn new(rooms: [Room; 1]) -> Self {
+        Self { rooms }
     }
-}
 
-pub struct SmartElectricalSoket {
-    switch_status: bool,
-    power: i32,
-}
-
-pub struct SmartDevice<T: GetStatus> {
-    device: T,
-}
-
-impl<T: GetStatus> SmartDevice<T> {
-    fn new(device: T) -> Self {
-        Self { device }
+    fn check_room_index(&self, index: usize) {
+        if index >= self.rooms.len() {
+            panic!("No room with index {} in SmartHome", index)
+        }
     }
-    fn get_device_status(&mut self) {
-        println!("{}", self.device.print_status())
+    pub fn get_room(&self, index: usize) -> &Room {
+        self.check_room_index(index);
+        &self.rooms[index]
+    }
+    pub fn get_mutable_room(&mut self, index: usize) -> &mut Room {
+        self.check_room_index(index);
+        &mut self.rooms[index]
+    }
+
+    pub fn report(&self) {
+        for room in &self.rooms {
+            room.devices_report();
+        }
     }
 }

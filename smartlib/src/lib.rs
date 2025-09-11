@@ -1,3 +1,4 @@
+pub mod smart_devices;
 pub mod structures;
 
 pub fn add(left: u64, right: u64) -> u64 {
