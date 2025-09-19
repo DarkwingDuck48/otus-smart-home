@@ -1,6 +1,7 @@
 pub mod smart_devices;
 pub mod structures;
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub use crate::structures::{Room, SmartDevice, SmartHome};
+
+#[cfg(test)]
+mod tests;

@@ -1,31 +1,33 @@
 use crate::smart_devices::{SmartElectricalSoket, SmartThermometer};
 
-pub trait GetStatus {
-    fn print_status(&self) -> String;
-}
-
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SmartDevice {
     Thermometer(SmartThermometer),
     ElectricalSocket(SmartElectricalSoket),
 }
 
 impl SmartDevice {
-    fn report(&self) -> String {
+    /// Вывод инофрмации о состоянии устройства
+    fn report(&self) {
         match self {
-            SmartDevice::Thermometer(thermo) => thermo.print_status(),
-            SmartDevice::ElectricalSocket(socket) => socket.print_status(),
+            SmartDevice::Thermometer(thermo) => {
+                println!("| -- {}", thermo)
+            }
+            SmartDevice::ElectricalSocket(socket) => {
+                println!("| -- {}", socket)
+            }
         }
     }
 }
 
 pub struct Room {
-    devices: [SmartDevice; 4],
+    name: String,
+    devices: [SmartDevice; 3],
 }
 
 impl Room {
-    pub fn new(devices: [SmartDevice; 4]) -> Self {
-        Self { devices }
+    pub fn new(name: String, devices: [SmartDevice; 3]) -> Self {
+        Self { name, devices }
     }
 
     fn check_device_index(&self, index: usize) {
@@ -44,10 +46,15 @@ impl Room {
         &mut self.devices[index]
     }
 
-    pub fn devices_report(&self) {
-        for device in &self.devices {
-            println!("{}", device.report());
+    pub fn report(&self) {
+        println!("Комната '{}': ", self.name);
+        for device in self.devices.iter() {
+            device.report();
         }
+    }
+
+    pub fn get_name(&self) -> &str {
+        &self.name
     }
 }
 
@@ -76,7 +83,7 @@ impl SmartHome {
 
     pub fn report(&self) {
         for room in &self.rooms {
-            room.devices_report();
+            room.report();
         }
     }
 }
