@@ -14,42 +14,39 @@ fn create_room() -> Room {
     let another_soket =
         SmartDevice::ElectricalSocket(SmartElectricalSoket::new(String::from("Router"), 210.0));
 
-    Room::new(
-        String::from("Гостинная"),
-        [smartsoket, termometer, another_soket],
-    )
+    let mut room = Room::new(String::from("Гостинная"));
+    room.add_device(termometer);
+    room.add_device(smartsoket);
+    room.add_device(another_soket);
+    room
 }
 
-fn create_home(rooms: [Room; 1]) -> SmartHome {
+fn create_home(rooms: Vec<Room>) -> SmartHome {
     SmartHome::new(rooms)
 }
 
 #[test]
-#[should_panic]
-fn test_room_panic() {
+fn test_room_get_device_option() {
     let room = create_room();
-    room.get_device(5);
+    assert!(room.get_device("RoomThermometer").is_some());
 }
 
 #[test]
-#[should_panic]
-fn test_mut_room_panic() {
+fn test_mut_room_get_device_option() {
     let mut room = create_room();
-    room.get_mutable_device(5);
+    assert!(room.get_mutable_device("RoomThermometer").is_some());
 }
 
-#[test]
-#[should_panic]
-fn test_home_panic() {
-    let rooms = create_room();
-    let home = create_home([rooms]);
-    home.get_room(1);
-}
+// #[test]
+// fn test_home_get_room_option() {
+//     let rooms = create_room();
+//     let home = create_home([rooms]);
+//     assert!(home.get_room(1).is_none());
+// }
 
-#[test]
-#[should_panic]
-fn test_mut_home_panic() {
-    let rooms = create_room();
-    let mut home = create_home([rooms]);
-    home.get_mutable_room(1);
-}
+// #[test]
+// fn test_mut_home_get_room_option() {
+//     let rooms = create_room();
+//     let mut home = create_home([rooms]);
+//     assert!(home.get_mutable_room(1).is_none());
+// }

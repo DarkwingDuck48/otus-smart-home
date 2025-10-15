@@ -1,6 +1,6 @@
 use smartlib::{
+    Room, SmartDevice, SmartHome, add_room,
     smart_devices::{SmartElectricalSoket, SmartThermometer, TempMeasures},
-    {Room, SmartDevice, SmartHome},
 };
 
 /// Пример использования библиотеки для умного доме
@@ -10,22 +10,24 @@ fn main() {
         SmartThermometer::new(String::from("RoomThermometer"), TempMeasures::C, 24.0);
     let some_electrical_soket = SmartElectricalSoket::new(String::from("ComputerSoket"), 220.0);
 
-    let termometer = SmartDevice::Thermometer(new_termometer);
+    //let termometer = SmartDevice::Thermometer(new_termometer);
 
-    let smartsoket = SmartDevice::ElectricalSocket(some_electrical_soket);
-    let another_soket =
-        SmartDevice::ElectricalSocket(SmartElectricalSoket::new(String::from("Router"), 210.0));
+    //let smartsoket = SmartDevice::ElectricalSocket(some_electrical_soket);
+    //let another_soket =
+    //    SmartDevice::ElectricalSocket(SmartElectricalSoket::new(String::from("Router"), 210.0));
 
-    let room = Room::new(
-        String::from("Гостинная"),
-        [smartsoket, termometer, another_soket],
+    let room = add_room!(
+        String::from("BaseRoom"),
+        ("T", new_termometer),
+        ("S1", some_electrical_soket)
     );
-    let mut smart_home = SmartHome::new([room]);
+    let mut smart_home = SmartHome::new(vec![room]);
     smart_home.report();
     println!("Включаем розетку в комнате...");
-    if let SmartDevice::ElectricalSocket(socket) =
-        smart_home.get_mutable_room(0).get_mutable_device(0)
+    if let Some(room) = smart_home.get_mutable_room("BaseRoom")
+        && let Some(SmartDevice::ElectricalSocket(socket)) = room.get_mutable_device("S1")
     {
+        println!("{:?}", socket.is_on());
         socket.turn_on();
     }
     smart_home.report();
