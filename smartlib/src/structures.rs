@@ -5,6 +5,11 @@ use crate::{
 
 use std::collections::HashMap;
 
+/// Общий трейт формирования текстового отчёта
+pub trait Report {
+    fn report(&self) -> String;
+}
+
 #[derive(Debug, Clone)]
 pub enum SmartDevice {
     Thermometer(SmartThermometer),
@@ -23,16 +28,11 @@ impl From<SmartElectricalSoket> for SmartDevice {
     }
 }
 
-impl SmartDevice {
-
-    fn report(&self) {
+impl Report for SmartDevice {
+    fn report(&self) -> String {
         match self {
-            SmartDevice::Thermometer(thermo) => {
-                println!("| -- {}", thermo)
-            }
-            SmartDevice::ElectricalSocket(socket) => {
-                println!("| -- {}", socket)
-            }
+            SmartDevice::Thermometer(thermo) => format!("| -- {}", thermo),
+            SmartDevice::ElectricalSocket(socket) => format!("| -- {}", socket),
         }
     }
 }
@@ -55,9 +55,9 @@ impl Room {
         self.devices.insert(device_key, new_device);
     }
 
-    pub fn delete_device(&mut self, device_name: &str) -> Result<(), String> {
+    pub fn delete_device(&mut self, device_name: &str) -> Result<(), SmartHomeErrors> {
         if !self.devices.contains_key(device_name) {
-            return Err(format!("No device {} in the room", device_name));
+            return Err(SmartHomeErrors::DeviceNotFound(device_name.to_string()));
         };
         self.devices.remove(device_name);
         Ok(())
@@ -71,30 +71,39 @@ impl Room {
         self.devices.get_mut(device_name)
     }
 
-    pub fn report(&self) {
-        println!("Комната '{}': ", self.name);
-        for device in self.devices.iter() {
-            device.1.report();
-        }
-    }
-
     pub fn get_name(&self) -> &str {
         &self.name
     }
 }
 
+impl Report for Room {
+    fn report(&self) -> String {
+        let mut out = String::new();
+        out.push_str(&format!("Комната '{}': \n", self.name));
+        for device in self.devices.values() {
+            out.push_str(&device.report());
+            out.push('\n');
+        }
+        out
+    }
+}
+
 #[derive(Debug)]
 pub struct SmartHome {
+    name: String,
     rooms: HashMap<String, Room>,
 }
 
 impl SmartHome {
-    pub fn new(rooms: Vec<Room>) -> Self {
+    pub fn new(home_name: String, rooms: Vec<Room>) -> Self {
         let mut added_rooms = HashMap::new();
         for room in rooms {
             added_rooms.insert(room.name.clone(), room);
         }
-        Self { rooms: added_rooms }
+        Self {
+            name: home_name,
+            rooms: added_rooms,
+        }
     }
 
     pub fn add_room_with_key(&mut self, room_key: String, new_room: Room) {
@@ -114,9 +123,9 @@ impl SmartHome {
         }
     }
 
-    pub fn delete_room(&mut self, room_name: &str) -> Result<(), String> {
+    pub fn delete_room(&mut self, room_name: &str) -> Result<(), SmartHomeErrors> {
         if !self.rooms.contains_key(room_name) {
-            return Err(format!("No room {} in the home", room_name));
+            return Err(SmartHomeErrors::RoomNotFound(room_name.to_string()));
         };
         self.rooms.remove(room_name);
         Ok(())
@@ -128,10 +137,16 @@ impl SmartHome {
     pub fn get_mutable_room(&mut self, room_name: &str) -> Option<&mut Room> {
         self.rooms.get_mut(room_name)
     }
+}
 
-    pub fn report(&self) {
-        for room in &self.rooms {
-            room.1.report();
+impl Report for SmartHome {
+    fn report(&self) -> String {
+        let mut out = String::new();
+        out.push_str(&format!("Отчет для дома: {}\n", self.name).to_string());
+        out.push('\n');
+        for room in self.rooms.values() {
+            out.push_str(&room.report());
         }
+        out
     }
 }
