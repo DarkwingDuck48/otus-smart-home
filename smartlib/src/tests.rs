@@ -18,7 +18,9 @@ fn create_room() -> Room {
     room
 }
 
-fn create_home(rooms: Vec<Room>) -> SmartHome { SmartHome::new(String::from("TestHome"), rooms) }
+fn create_home(rooms: Vec<Room>) -> SmartHome {
+    SmartHome::new(String::from("TestHome"), rooms)
+}
 
 #[test]
 fn test_room_get_device_option() {
@@ -85,7 +87,9 @@ fn test_home_get_device_and_errors() {
     let home = create_home(vec![room]);
 
     // ok path
-    let device = home.get_device_from_room("Гостинная", "RoomThermometer").unwrap();
+    let device = home
+        .get_device_from_room("Гостинная", "RoomThermometer")
+        .unwrap();
     match device {
         SmartDevice::Thermometer(_) => {}
         _ => panic!("unexpected device type"),

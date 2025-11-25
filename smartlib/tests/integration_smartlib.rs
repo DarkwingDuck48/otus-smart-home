@@ -1,5 +1,5 @@
-use smartlib::{Room, SmartDevice, SmartHome};
 use smartlib::structures::Report;
+use smartlib::{Room, SmartDevice, SmartHome};
 
 #[test]
 fn reports_include_room_and_device_lines() {
@@ -35,4 +35,3 @@ fn errors_are_displayed_meaningfully() {
     let msg = err.to_string();
     assert!(msg.contains("Room Nope not found"));
 }
-
