@@ -1,6 +1,6 @@
 use crate::{
     errors::SmartHomeErrors,
-    smart_devices::{SmartElectricalSoket, SmartThermometer},
+    smart_devices::{SmartElectricalSoket, SmartThermometer, TCPSmartElectricalSocket},
 };
 
 use std::collections::HashMap;
@@ -10,10 +10,11 @@ pub trait Report {
     fn report(&self) -> String;
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum SmartDevice {
     Thermometer(SmartThermometer),
     ElectricalSocket(SmartElectricalSoket),
+    TCPSmartElectricalSocket(TCPSmartElectricalSocket),
 }
 
 impl From<SmartThermometer> for SmartDevice {
@@ -28,11 +29,18 @@ impl From<SmartElectricalSoket> for SmartDevice {
     }
 }
 
+impl From<TCPSmartElectricalSocket> for SmartDevice {
+    fn from(value: TCPSmartElectricalSocket) -> Self {
+        Self::TCPSmartElectricalSocket(value)
+    }
+}
+
 impl Report for SmartDevice {
     fn report(&self) -> String {
         match self {
             SmartDevice::Thermometer(thermo) => format!("| -- {}", thermo),
             SmartDevice::ElectricalSocket(socket) => format!("| -- {}", socket),
+            SmartDevice::TCPSmartElectricalSocket(tcpsocket) => format!("| -- {}", tcpsocket),
         }
     }
 }
